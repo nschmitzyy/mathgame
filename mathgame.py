@@ -42,21 +42,38 @@ st.write(f"Aufgaben: {st.session_state.aufgaben}")
 
 if st.session_state.leben > 0:
     st.markdown(
-        f"""
-        <div style="font-size:32px;text-align:center;padding:10px;border:2px solid #444;border-radius:10px;">
-        {st.session_state.a} {st.session_state.op} {st.session_state.b} {st.session_state.op} {st.session_state.c}
-        </div>
-        """,
+        f"<div style='font-size:32px;text-align:center;padding:10px;border:2px solid #444;border-radius:10px;'>{st.session_state.a} {st.session_state.op} {st.session_state.b} {st.session_state.op} {st.session_state.c}</div>",
         unsafe_allow_html=True
     )
 
-    with st.form("calc", clear_on_submit=False):
-        st.text_input(
-            "",
-            key="eingabe",
-            label_visibility="collapsed"
-        )
-        submitted = st.form_submit_button("Enter")
+    def check_answer():
+        if st.session_state.eingabe != "":
+            try:
+                if int(st.session_state.eingabe) == st.session_state.loesung:
+                    st.session_state.streak += 1
+                    st.session_state.aufgaben += 1
+                    st.session_state.eingabe = ""
+                    if st.session_state.streak == 10:
+                        st.session_state.division = True
+                    if st.session_state.streak == 15:
+                        st.session_state.max_zahl = 20
+                else:
+                    st.session_state.leben -= 1
+                    st.session_state.streak = 0
+                    st.session_state.eingabe = ""
+                neue_aufgabe()
+            except ValueError:
+                st.session_state.eingabe = ""
+
+    # Eingabefeld mit Autofocus
+    st.text_input(
+        "Deine Antwort",
+        key="eingabe",
+        on_change=check_answer,
+        label_visibility="collapsed",
+        placeholder="Gib hier deine Antwort ein",
+        autofocus=True
+    )
 
     cols = st.columns(3)
     for i, num in enumerate(range(1, 10)):
@@ -75,20 +92,6 @@ if st.session_state.leben > 0:
         st.session_state.eingabe = ""
         st.rerun()
 
-    if submitted and st.session_state.eingabe != "":
-        if int(st.session_state.eingabe) == st.session_state.loesung:
-            st.session_state.streak += 1
-            st.session_state.aufgaben += 1
-            st.session_state.eingabe = ""
-            if st.session_state.streak == 10:
-                st.session_state.division = True
-            if st.session_state.streak == 15:
-                st.session_state.max_zahl = 20
-        else:
-            st.session_state.leben -= 1
-            st.session_state.streak = 0
-        neue_aufgabe()
-        st.rerun()
 else:
     st.subheader("Spiel vorbei")
     if st.button("Neustarten"):
